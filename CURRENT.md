@@ -6,12 +6,16 @@ modules by name rather than repeating their narrative. As with `CORE.md`, every 
 resource pointer here traces to an entry verified in `research/verified.md` — nothing is
 filled in from training-data memory.
 
-Given that only 3 of 10 topic areas in `research/verified.md` have any verified sources at
-all (LLM basics/tokenization, agents & tool use, and AI Engineer roadmaps), this file is
-short by design: it is the roadmap references plus the current-tooling angle on Module 6,
-plus explicit gap notes for every other current-layer concern the course will eventually
-need. That is the expected, honest shape of this file right now — it is not padded out with
-unsourced "state of the ecosystem" prose.
+As of 11.09.2026, 7 of 10 topic areas in `research/verified.md` have at least one verified
+source (LLM basics/tokenization, embeddings, evals, prompt engineering, agents & tool use,
+prompt injection, and AI Engineer roadmaps); only RAG and cost/latency remain fully unsourced,
+and interview readiness has zero by deliberate design (see `CORE.md` Module 9). Most of that
+new material earned a place in `CORE.md` instead of here, though, because it teaches durable
+concepts (how HNSW works, evaluation concepts, prompting fundamentals, injection taxonomy)
+rather than something that will look different in six months. This file stays intentionally
+short: it's the roadmap references, the current-tooling angle on Module 6, and explicit gap
+notes for every other current-layer concern the course will eventually need — not padded out
+with unsourced "state of the ecosystem" prose.
 
 ---
 
@@ -115,44 +119,52 @@ prices aren't) — only the live pricing numbers belong in this CURRENT file.
 
 ## Prompt Design — vendor-specific current guides (supports CORE.md → Module 5)
 
-**GAP — entirely unsourced**, which is notable because this is exactly the kind of
-first-party, version-specific material this CURRENT file exists to hold. Three first-party
-vendor prompting guides were identified in raw research but none could be fetched this
-session:
-- Anthropic/Claude: "Prompt engineering best practices for 2026" —
-  `research/raw/prompt-engineering/01-anthropic-claude-prompting-best-practices.md`
+**Update (11.09.2026):** Anthropic's own guide is now verified and taught in `CORE.md`
+Module 5 Lesson 5.1 (it earned a CORE placement rather than staying here, since its
+technique content — few-shot, CoT, prefill — is durable, not version-specific; only its
+"current as of late 2025" framing is time-sensitive). OpenAI's and Google's equivalents
+remain unsourced:
 - OpenAI: "Codex Prompting Guide" / "GPT-5.5 prompting guide" (the latter via Simon
   Willison, an independent but reputable practitioner) —
   `research/raw/prompt-engineering/12-openai-codex-prompting-guide.md` and
   `research/raw/prompt-engineering/11-simonwillison-gpt55-prompting-guide.md`
 - Google: "Gemini 3 developer guide" —
   `research/raw/prompt-engineering/14-google-gemini3-developer-guide.md`
+- Also newly found, not yet verified: Anthropic's "Effective context engineering for AI
+  agents" and Anthropic's own interactive prompting tutorial repo (the latter is on GitHub,
+  already reachable — top priority) —
+  `research/raw/prompt-engineering/19-anthropic-effective-context-engineering.md`,
+  `research/raw/prompt-engineering/20-anthropic-prompt-eng-interactive-tutorial.md`
 
-Re-checking these three first-party sources should be the top priority the next time this
-session (or a future one) gets broader network access — they would immediately upgrade
-Module 5 from a total GAP to at least a partially-sourced module, and would populate this
-CURRENT section with the actual current per-vendor guidance it's meant to hold.
+Re-checking the OpenAI/Google guides (and the GitHub-hosted Anthropic tutorial, which needs
+no network-policy change at all) should be the next priority — they'd round out this section
+with the actual current per-vendor guidance it's meant to hold, alongside Anthropic's.
 
 ---
 
 ## Interview Readiness — current trends (supports CORE.md → Module 9)
 
-**GAP — entirely unsourced.** No verified sources exist for AI Engineer interview
-questions/trends. See `CORE.md` Module 9 for the full candidate list and what's specifically
-needed (a credible non-listicle question bank, a system-design guide with worked answers,
-and topic-specific RAG/prompt-engineering question sets).
+**Update (11.09.2026): no longer a GAP to fill with sources — redesigned instead.** Module 9
+was rebuilt around a "defend your own project" methodology that needs no external question
+bank (see `CORE.md` Module 9 for the full rationale and structure). Of the 20 raw candidates
+for this topic, 11 were screened out entirely as pure question-list listicles; the remaining
+9 are kept as strictly optional, unverified supplementary material (`CORE.md` Module 9 Lesson
+9.2) — nothing here belongs in the CURRENT layer specifically, since the methodology itself
+doesn't age the way a tool/pricing fact would.
 
 ---
 
 ## Prompt Injection — current threat landscape (supports CORE.md → Module 8)
 
-Beyond the one sourced worked example already taught in `CORE.md` Module 8 Lesson 8.1
-(Microsoft's MCP tool-metadata poisoning case, June 2026), there is no verified source for
-current attack trends, active benchmarks, or open-source guardrail tooling adoption. See
-`CORE.md` Module 8 Lesson 8.2 for the full gap list and candidates — several of the
-unverified candidates there (LlamaFirewall, Snowflake Cortex Guardrails, the CI/CD-focused
-GitInject paper) are specifically current-tooling/threat-landscape material that belongs in
-this file once verified, rather than in CORE's durable narrative.
+Beyond the two sourced items already taught in `CORE.md` Module 8 (Lesson 8.1, Microsoft's
+MCP tool-metadata poisoning case; Lesson 8.2, Unit 42's indirect-injection taxonomy and
+telemetry — both durable enough to live in CORE rather than here), there is no verified
+source for active benchmarks or open-source guardrail tooling adoption specifically. See
+`CORE.md` Module 8 Lesson 8.3 for the full gap list and candidates — several of the
+unverified candidates there (LlamaFirewall, the OWASP cheat sheet, the spotlighting/
+instruction-hierarchy/design-level-defenses papers, the CI/CD-focused GitInject paper) are
+specifically current-tooling/threat-landscape material that belongs in this file once
+verified, rather than in CORE's durable narrative.
 
 ---
 
@@ -163,11 +175,11 @@ this file once verified, rather than in CORE's durable narrative.
 | Roadmaps & Orientation | 3 (all three verified roadmap repos) | sourced, with an explicit gap on roadmap.sh itself |
 | Agents & Tool Use current state | 2 (both MCP posts, cross-linked from CORE Module 6) | sourced |
 | Cost & Latency pricing | 0 | GAP |
-| Prompt Design vendor guides | 0 | GAP (3 first-party candidates identified, unverified) |
-| Interview Readiness trends | 0 | GAP |
-| Prompt Injection threat landscape | 0 beyond the 1 shared CORE example | GAP |
+| Prompt Design vendor guides | 0 (Anthropic's guide moved to CORE Module 5 — durable technique content) | GAP for OpenAI/Google guides (3 candidates identified incl. 1 already on GitHub, unverified) |
+| Interview Readiness trends | 0, by design | redesigned in CORE Module 9, not a sourcing gap — see CORE.md |
+| Prompt Injection threat landscape | 0 beyond the 2 CORE-durable examples (Lessons 8.1-8.2) | GAP for benchmarks/guardrail tooling specifically |
 
 Total distinct verified sources referenced across this file: 5 (3 roadmap repos + 2 MCP
-posts). The Microsoft security post is referenced by pointer back to CORE.md rather than
-recounted here, since its content is CORE-durable (a general lesson pattern) rather than a
-2026-specific tooling fact.
+posts). The Microsoft security post and the Unit 42 post are referenced by pointer back to
+CORE.md rather than recounted here, since their content is CORE-durable (general lesson
+patterns) rather than 2026-specific tooling facts.

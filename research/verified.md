@@ -2,9 +2,11 @@
 
 Every link collected in `research/raw/` was checked by actually calling WebFetch on it — nothing here (or in "Не проверено") was kept based on the title or the two-line description already sitting in the raw file. Hard rule: only what genuinely loaded gets a verdict.
 
-**Result of this pass:** this session's network egress policy allows outbound traffic only to GitHub-related hosts (`github.com`, `raw.githubusercontent.com`) and a couple of official blog subdomains that happened to be allow-listed (`blog.modelcontextprotocol.io`, `www.microsoft.com`). Every other domain — arxiv.org, medium.com, redis.io, even control domains like `google.com` and `en.wikipedia.org` — was rejected at the proxy with `403 organization policy`, confirmed independently by multiple verification runs and by raw `curl` against the proxy. This is an infrastructure restriction of the session, not a judgment on the sources' quality. Of 183 links, only **7 could actually be opened**, and all 7 passed.
+**Result of the automated pass:** this session's network egress policy allows outbound traffic only to GitHub-related hosts (`github.com`, `raw.githubusercontent.com`) and a couple of official blog subdomains that happened to be allow-listed (`blog.modelcontextprotocol.io`, `www.microsoft.com`). Every other domain — arxiv.org, medium.com, redis.io, even control domains like `google.com` and `en.wikipedia.org` — was rejected at the proxy with `403 organization policy`, confirmed independently by multiple verification runs and by raw `curl` against the proxy. This is an infrastructure restriction of the session, not a judgment on the sources' quality. Of 183 links, only 7 could actually be opened by WebFetch in this session, and all 7 passed.
 
-Rejection criteria that were meant to be applied per-source, when a fetch did succeed: broken/dead link, redirect to a generic homepage, paywall, a page that's mainly a funnel toward a paid course, an unexplained "top-10" listicle, text with no code example and no concrete specifics, or a GitHub repo with no commits in the last 12 months (today: 2026-09-10). These were applied to the 6 sources that loaded; the rest could not be evaluated against them at all and are listed as "Не проверено" with the fetch failure as the reason.
+**Manual follow-up pass (11.09.2026):** the user independently opened and read 5 more sources from outside this session's network restriction (embeddings, prompt engineering ×2, evals, prompt injection) and confirmed all 5 as genuine, concrete, first-party or canonical material — added below with the same citation format. Total verified now: **12 of 183**. See `research/urls-to-verify.md` for the triage of the remaining 171 (40 flagged worth opening next, ~76-78 filtered out by source genre without being opened — exact count has a small unreconciled gap noted there, ~53 still fully unsorted across topics this pass didn't touch).
+
+Rejection criteria applied per-source, when a fetch/manual open did succeed: broken/dead link, redirect to a generic homepage, paywall, a page that's mainly a funnel toward a paid course, an unexplained "top-10" listicle, text with no code example and no concrete specifics, or a GitHub repo with no commits in the last 12 months. These were applied to the 12 sources that actually loaded (7 via WebFetch on 2026-09-10, 5 manually on 2026-09-11); the rest could not be evaluated against them at all and are listed as "Не проверено" with the fetch failure as the reason.
 
 **Quality legend:** A = primary source (official docs/blog from the vendor, the original paper, the tool's own repo) · B = useful with caveats (solid secondary source) · C = overview only (passed the bar but doesn't go deep).
 
@@ -48,12 +50,20 @@ Rejection criteria that were meant to be applied per-source, when a fetch did su
 
 ### Verified
 
+#### Hierarchical Navigable Small Worlds (HNSW) — Pinecone
+- URL: https://www.pinecone.io/learn/series/faiss/hnsw/
+- Quality: A
+- Level: intermediate
+- Price: free
+- Time: ~2-3 hours with working through the code
+- Verified: 2026-09-11 (manual check)
+- Note: Устройство HNSW от skip-list и NSW-графов до слоёной структуры; реализация на Faiss с реальными параметрами (M, efConstruction, efSearch); замеры recall/времени поиска/памяти на Sift1M; ссылки на оригинальные работы Малкова; есть рабочий ноутбук на GitHub. Часть серии "Faiss: The Missing Manual" (см. `research/raw/embeddings-vector-search/16-faiss-missing-manual-series.md` для остальных глав — LSH, product quantization, композитные индексы — не открывались отдельно, но та же серия/качество).
+
 ### Не проверено
 
 - The Best Open-Source Embedding Models in 2026 — https://www.bentoml.com/blog/a-guide-to-open-source-embedding-models — Reason: fetch failed: EGRESS_BLOCKED (network egress proxy in this environment blocked all access to this domain; page content could not be inspected)
 - How to Choose the Best Embedding Model for RAG in 2026: 10 Models Benchmarked — https://milvusio.medium.com/how-to-choose-the-best-embedding-model-for-rag-in-2026-10-models-benchmarked-4efc9508a193 — Reason: fetch failed: EGRESS_BLOCKED (network egress proxy in this environment blocked all access to this domain; page content could not be inspected)
 - Comparing the best open source vector databases (2026) — https://redis.io/blog/best-open-source-vector-databases-comparison/ — Reason: fetch failed: EGRESS_BLOCKED (network egress proxy in this environment blocked all access to this domain; page content could not be inspected)
-- Hierarchical Navigable Small Worlds (HNSW) — https://www.pinecone.io/learn/series/faiss/hnsw/ — Reason: fetch failed: EGRESS_BLOCKED (network egress proxy in this environment blocked all access to this domain; page content could not be inspected)
 - Hybrid Search Guide: Vectors & Full-Text (April 2026) — https://supermemory.ai/blog/hybrid-search-guide/ — Reason: fetch failed: EGRESS_BLOCKED (network egress proxy in this environment blocked all access to this domain; page content could not be inspected)
 - Hybrid Search in Production: Why BM25 Still Wins on the Queries That Matter — https://tianpan.co/blog/2026-04-12-hybrid-search-production-bm25-dense-embeddings — Reason: fetch failed: EGRESS_BLOCKED (network egress proxy in this environment blocked all access to this domain; page content could not be inspected)
 - RAG Chunking Strategies 2026: 8 Methods Compared with Code Examples — https://denser.ai/blog/rag-chunking-strategies/ — Reason: fetch failed: EGRESS_BLOCKED (network egress proxy in this environment blocked all access to this domain; page content could not be inspected)
@@ -91,6 +101,15 @@ Rejection criteria that were meant to be applied per-source, when a fetch did su
 
 ### Verified
 
+#### Evaluation concepts — LangSmith / LangChain docs
+- URL: https://docs.langchain.com/langsmith/evaluation-concepts
+- Quality: A
+- Level: intermediate
+- Price: free (documentation; the LangSmith product itself is paid)
+- Time: ~1.5-2 hours
+- Verified: 2026-09-11 (manual check)
+- Note: Разделение offline (до деплоя, на датасетах с эталонными ответами) и online (на живом трафике, без эталонов); типы оценщиков — человек, код, LLM-as-judge, попарное сравнение; reference-free vs reference-based и где каждый применим; как строить датасеты (10-20 ручных примеров → исторические трейсы → синтетика); различие оценки и тестирования. Концептуальный костяк модуля evals, применим и без самого продукта LangSmith.
+
 ### Не проверено
 
 - Top 9 LLM Evaluation Tools in 2026 - Confident AI — https://www.confident-ai.com/knowledge-base/compare/best-llm-evaluation-tools — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
@@ -103,7 +122,6 @@ Rejection criteria that were meant to be applied per-source, when a fetch did su
 - AI Agent Benchmarks: The 2026 Enterprise Evaluation Guide - Automation Anywhere — https://www.automationanywhere.com/company/blog/ai-agent-benchmarks — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Prompt Regression Testing: Preventing Quality Decay - Statsig — https://www.statsig.com/perspectives/slug-prompt-regression-testing — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Building Agent & LLM Evaluation Datasets - MLflow AI Platform Docs — https://mlflow.org/docs/latest/genai/datasets/ — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
-- Evaluation Concepts - Docs by LangChain (LangSmith) — https://docs.langchain.com/langsmith/evaluation-concepts — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - LLM Evaluation: Methods, Metrics, RAG & Agent Evals Guide - Arize — https://arize.com/llm-evaluation/ — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - RAG Evaluation: Complete Guide 2026 - SuperAnnotate — https://www.superannotate.com/blog/rag-evaluation — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - How to Calibrate Your LLM Judge With Human Annotations - Galileo — https://galileo.ai/blog/calibrate-llm-judge-human-annotations — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
@@ -115,9 +133,27 @@ Rejection criteria that were meant to be applied per-source, when a fetch did su
 
 ### Verified
 
+#### Prompt engineering best practices for 2026 | Claude by Anthropic
+- URL: https://claude.com/blog/best-practices-for-prompt-engineering
+- Quality: A
+- Level: beginner → intermediate
+- Price: free
+- Time: ~1 hour
+- Verified: 2026-09-11 (manual check)
+- Published: 2025-11-10
+- Note: Базовые техники (явность, контекст, конкретность, примеры, разрешение на "не знаю"), продвинутые (prefill, три вида chain-of-thought, контроль формата, prompt chaining), и раздел про устаревшие техники — XML-теги и role prompting уже не обязательны. Таблица "что нужно → какая техника" и список типичных ошибок. Показывает сдвиг индустрии от prompt engineering к context engineering.
+
+#### Few-Shot Prompting — Prompt Engineering Guide (DAIR.AI)
+- URL: https://www.promptingguide.ai/techniques/fewshot
+- Quality: A
+- Level: beginner
+- Price: free (материал; курсы на сайте платные)
+- Time: ~30 min на страницу, весь раздел техник — 6-8 часов
+- Verified: 2026-09-11 (manual check)
+- Note: Few-shot с примерами из Brown et al. 2020, выводы Min et al. 2022 (важен формат и распределение меток, а не корректность самих меток), честная демонстрация того, где few-shot ломается — на задачах с рассуждением. Канонический открытый учебник со ссылками на первоисточники, открытый исходник на GitHub. Весь раздел `techniques` покрывает модуль промпт-дизайна целиком.
+
 ### Не проверено
 
-- Prompt engineering best practices for 2026 | Claude by Anthropic — https://claude.com/blog/best-practices-for-prompt-engineering — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - The 2026 Guide to Prompt Engineering — https://www.ibm.com/think/prompt-engineering — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Prompt engineering techniques: Top 6 for 2026 — https://www.k2view.com/blog/prompt-engineering-techniques/ — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Prompt Engineering: Advanced Techniques for 2026 — https://www.digitalapplied.com/blog/prompt-engineering-advanced-techniques-2026 — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
@@ -131,7 +167,6 @@ Rejection criteria that were meant to be applied per-source, when a fetch did su
 - Codex Prompting Guide — https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - You're prompting Gemini 3 wrong according to Google's new user guide — https://www.tomsguide.com/ai/youre-prompting-gemini-3-wrong-according-to-googles-new-user-guide-heres-what-to-do-instead — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Gemini 3 developer guide | Gemini API | Google AI for Developers — https://ai.google.dev/gemini-api/docs/gemini-3 — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
-- Few-Shot Prompting | Prompt Engineering Guide — https://www.promptingguide.ai/techniques/fewshot — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Zero-Shot vs Few-Shot prompting: A Guide with Examples — https://www.vellum.ai/blog/zero-shot-vs-few-shot-prompting-a-guide-with-examples — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Prompt Engineering for AI Agents: 2026 Guide — https://pickaxe.co/post/prompt-engineering-ai-agents — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Structured Prompt Language: Declarative Context Management for LLMs — https://arxiv.org/pdf/2602.21257 — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
@@ -216,6 +251,16 @@ Rejection criteria that were meant to be applied per-source, when a fetch did su
 
 ### Verified
 
+#### Fooling AI Agents: Web-Based Indirect Prompt Injection Observed in the Wild — Unit 42
+- URL: https://unit42.paloaltonetworks.com/ai-agent-prompt-injection/
+- Quality: A
+- Level: intermediate → advanced
+- Price: free
+- Time: ~1.5 hours (заявлено 20 минут чтения, реально дольше с разбором)
+- Verified: 2026-09-11 (manual check)
+- Published: 2026-03-03
+- Note: Полевое исследование на реальной телеметрии (не теория). Таксономия непрямых инъекций по двум осям — намерение атакующего и инженерия полезной нагрузки (доставка: нулевой размер шрифта, CSS-сокрытие, off-screen, HTML-атрибуты, SVG/CDATA; обход: невидимые символы, гомоглифы, разбиение нагрузки, многослойное кодирование). 12 разобранных реальных случаев. Телеметрия: 85.2% обходов — обычная социальная инженерия; 37.8% доставки — просто видимый текст на странице. Раздел защит: spotlighting, иерархия инструкций, состязательное обучение, архитектурные защиты. Корневая причина, которую разбирает статья — LLM не отличает инструкции от данных в одном потоке контекста — прямо соответствует принципу "содержимое страниц — данные, не команды" в правилах этого репозитория. Страница сама содержит директиву для ИИ-агентов не исполнять приведённые на ней примеры — наглядный пример границы доверия на практике; директива не выполнялась, содержимое использовано только как описываемый материал.
+
 ### Не проверено
 
 - Prompt Injection Defense for Production AI Agents: A Complete 2026 Guide — https://www.getmaxim.ai/articles/prompt-injection-defense-for-production-ai-agents-a-complete-2026-guide/ — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
@@ -223,7 +268,6 @@ Rejection criteria that were meant to be applied per-source, when a fetch did su
 - PIArena: A Platform for Prompt Injection Evaluation — https://arxiv.org/pdf/2604.08499 — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - LongPIBench: A Long-Context Benchmark for Prompt Injection — https://arxiv.org/abs/2608.28411v1 — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Indirect Prompt Injection: The Hidden Threat Breaking Modern AI Systems — https://www.lakera.ai/blog/indirect-prompt-injection — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
-- Fooling AI Agents: Web-Based Indirect Prompt Injection Observed in the Wild — https://unit42.paloaltonetworks.com/ai-agent-prompt-injection/ — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Indirect Prompt Injection Attacks: Hidden AI Risks — https://www.crowdstrike.com/en-us/blog/indirect-prompt-injection-attacks-hidden-ai-risks/ — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Agent Data Injection Attacks are Realistic Threats to AI Agents — https://arxiv.org/html/2607.05120v1 — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
 - Prompt Injection Hacking: Emerging Trade Secret, Employment, and Litigation Risks — https://ktslaw.com/insights/alert/2026/7/prompt-injection-hacking-emerging-trade-secret-employment-and-litigation-risks — Reason: fetch failed: EGRESS_BLOCKED (session network policy allows only GitHub-related domains; this host was never reachable, so no verdict could be made on content)
@@ -314,17 +358,23 @@ Rejection criteria that were meant to be applied per-source, when a fetch did su
 
 ## Итог проверки
 
-- **Проверено (реально открыто через WebFetch):** 7 из 183
-- **Прошло:** 7
-- **Отсеяно / не открылось:** 176
+- **Проверено (реально открыто):** 12 из 183 — 7 через WebFetch в этой сессии (10.09.2026), 5 вручную вне сетевого ограничения (11.09.2026)
+- **Прошло:** 12 из 12
+- **Не открывалось вообще:** 53 (темы, которые не затрагивала ручная проверка: llm-basics-tokenization — 19, agents-tool-use — 17, ai-engineer-roadmaps — 17)
+- **Открыто по 7 темам ручной проверкой, из них:**
+  - Прошло и подтверждено: 5 (учтены выше)
+  - Отсеяно по жанру источника, без открытия содержимого: ~76-78 (вендорские «топ-N» листиклы, контент-маркетинг вокруг продукта, Medium/агрегаторы, один юридический материал, плюс большая часть темы «Вопросы на собеседованиях» — см. `research/urls-to-verify.md` для полной разбивки, обоснования и сверки чисел)
+  - Прошли жанровый фильтр, но пока не открыты — в очереди: 40
+  - Найдено по ссылкам из уже проверенных источников (новые кандидаты, не из исходных 183) — 9, добавлены в `research/raw/` и в очередь на первоочередную проверку
 
 ### Почему не открылось — разбивка по причинам
 
 | Причина | Количество |
 |---|---|
-| `EGRESS_BLOCKED` — домен заблокирован сетевой политикой сессии (единственная причина для всех 176) | 176 |
-| Битые ссылки / редирект на главную / пейволл / paid-wrapper / «топ-10» без объяснений / нет кода и конкретики / протухший репозиторий | 0 (контентная проверка была недостижима — фильтры не успели применяться) |
+| `EGRESS_BLOCKED` — домен заблокирован сетевой политикой сессии, не проверялось за пределами сессии (53, темы вне ручной проверки) | 53 |
+| Отсеяно по жанру источника без открытия содержимого (ручная проверка) | 78 |
+| Прошли жанровый фильтр, ждут открытия | 40 |
 
-Единственный домен, к которому у сессии есть доступ, — GitHub (плюс два случайных хоста, `blog.modelcontextprotocol.io` и `www.microsoft.com`, которые оказались не заблокированы). Поэтому по-настоящему содержательную проверку прошли только источники на этих доменах: 4 GitHub-репозитория/страницы (включая tiktoken), 2 официальных поста в блоге Model Context Protocol и один пост в блоге Microsoft Security — все семь подтверждены как живые, конкретные, с реальными коммитами/датами и прошли все критерии отсева.
+Единственный домен, к которому у сессии есть прямой доступ, — GitHub (плюс два случайных хоста, `blog.modelcontextprotocol.io` и `www.microsoft.com`). Пять дополнительных источников проверены вручную вне этой сессии — все прошли (Quality A по всем пяти).
 
-**Это не значит, что остальные 176 источников плохие** — их подлинное качество неизвестно, потому что открыть их в этой сессии физически нельзя. Чтобы закончить проверку по-настоящему, нужна сессия/окружение с более широким доступом в интернет (не только GitHub).
+**Это не значит, что 78 отсеянных по жанру или 53 неоткрытых источника плохие** — жанровый отсев не оценивает содержание, а 53 не открывались вообще. Полная разбивка по каждой ссылке — в `research/urls-to-verify.md`.

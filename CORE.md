@@ -177,39 +177,76 @@ records a verdict under a "### Verified" heading in `research/verified.md`.
 **Prerequisites:** Module 1 (tokens are the unit embeddings are computed over; context-
 window reasoning carries forward).
 
-**Learning objectives (intended scope, not yet sourced):**
+**Learning objectives:**
 - Explain what an embedding is and why semantic similarity is computed via vector distance.
 - Choose an embedding model appropriately (dimensionality, domain fit, cost) for a given
-  task.
+  task. (Stretch, currently a GAP.)
 - Understand approximate nearest-neighbor search at a conceptual level (specifically HNSW,
-  the dominant production index type) well enough to reason about recall/latency tradeoffs.
+  the dominant production index type) well enough to reason about recall/latency tradeoffs,
+  and be able to tune its core parameters (M, efConstruction, efSearch).
 - Understand hybrid search (combining sparse/BM25 with dense vector retrieval) and why pure
-  vector search under-performs on exact-match/keyword-heavy queries.
-- Understand chunking strategy as a first-order lever on retrieval quality.
+  vector search under-performs on exact-match/keyword-heavy queries. (Stretch, currently a
+  GAP.)
+- Understand chunking strategy as a first-order lever on retrieval quality. (Stretch,
+  currently a GAP.)
 
-### Lesson content: GAP (entire module)
+### Lesson 2.1 — How vector search actually works: HNSW (SOURCED)
 
-**GAP — no verified sources at all.** `research/verified.md` records zero verified entries
-under "Эмбеддинги и векторный поиск"; every candidate is blocked as `EGRESS_BLOCKED`. Per
-the hard rules, no lesson content is written here — an unsourced explainer would be
-fabrication dressed as a lesson.
+Verified source:
+- **Hierarchical Navigable Small Worlds (HNSW) — Pinecone**
+  https://www.pinecone.io/learn/series/faiss/hnsw/ — Quality A · Level: intermediate ·
+  Price: free · Time: ~2-3 hours with the code · Verified 2026-09-11 (manual check).
+
+Teach directly from this page:
+- How HNSW is built up conceptually: skip lists → NSW graphs → the layered HNSW structure.
+- The Faiss implementation with real parameters (`M`, `efConstruction`, `efSearch`) and what
+  each one trades off.
+- The worked benchmark on Sift1M: recall, search time, and memory tradeoffs as `efSearch`
+  changes — this is the concrete "why do I get a slower/faster, more/less accurate index"
+  intuition an application engineer needs before picking defaults in a real vector DB.
+- Exercise: have the learner run the linked notebook, then predict (before checking) what
+  raising `efSearch` does to recall and latency, then verify against the plot.
+- Point at the original Malkov HNSW papers linked from the page for anyone who wants the
+  primary research citation, without requiring the learner to read them to pass this lesson.
+- Note for later: this page is part of Pinecone's "Faiss: The Missing Manual" series; the
+  other chapters (LSH, product quantization, composite indexes) are strong secondary-priority
+  candidates once re-verified — see `research/raw/embeddings-vector-search/16-faiss-missing-manual-series.md`
+  and `research/raw/embeddings-vector-search/11-product-quantization-pinecone.md`.
+
+This lesson only covers *how the index itself works*. It does not cover model selection,
+hybrid search, chunking, or reranking — those remain gaps below.
+
+### Lesson 2.2 — Model selection, hybrid search, chunking, reranking (GAP)
+
+**GAP.** No verified source yet for these sub-topics; every other candidate under
+"Эмбеддинги и векторный поиск" in `research/verified.md` is `EGRESS_BLOCKED` or was screened
+out by genre without being opened (see `research/urls-to-verify.md`).
 
 What's specifically needed, by sub-topic:
 1. **Embedding model selection** — a verified, non-listicle comparison with actual benchmark
    methodology (not just a ranked table) covering open-source and API-based embedding
    models.
-2. **Vector index mechanics (HNSW)** — a verified walkthrough with a worked example of how
-   HNSW builds/searches a graph, at a level an application engineer (not an ANN researcher)
-   needs.
-3. **Hybrid search** — a verified source with concrete implementation guidance for combining
+2. **Hybrid search** — a verified source with concrete implementation guidance for combining
    BM25 and dense retrieval (fusion method, e.g. RRF), ideally with a worked example.
-4. **Chunking strategy** — a verified source comparing chunking methods with actual code,
+3. **Chunking strategy** — a verified source comparing chunking methods with actual code,
    not just named strategies.
-5. **Reranking** — a verified source explaining cross-encoder rerankers and when they're
+4. **Reranking** — a verified source explaining cross-encoder rerankers and when they're
    worth the added latency.
 
 Candidate raw entries to re-check first (titles, under
-`research/raw/embeddings-vector-search/`):
+`research/raw/embeddings-vector-search/`) — 4 flagged "worth opening next" in
+`research/urls-to-verify.md`:
+- "Product Quantization: Compressing high-dimensional vectors by 97%" (Pinecone, same
+  verified series as 2.1) — `11-product-quantization-pinecone.md`
+- "Fine-tuning embeddings for RAG with synthetic data" (LlamaIndex) —
+  `10-fine-tuning-embeddings-synthetic-data-llamaindex.md`
+- "Scaling Vector Search to 1 Billion on PostgreSQL" (VectorChord) —
+  `12-scaling-vector-search-billion-postgresql.md`
+- "Hybrid Search in Production: Why BM25 Still Wins" (tianpan.co) —
+  `06-hybrid-search-production-bm25.md`
+
+Other candidates (screened out by genre — vendor listicle/content-marketing — without being
+opened; could be revisited if the topic still lacks material):
 - "The Best Open-Source Embedding Models in 2026" — `01-open-source-embedding-models-2026.md`
 - "How to Choose the Best Embedding Model for RAG in 2026: 10 Models Benchmarked" —
   `02-choosing-best-embedding-model-rag-2026.md`
@@ -302,20 +339,53 @@ Candidate raw entries to re-check first (titles, under `research/raw/rag/`):
 meaningfully teach evaluation against — evals is about measuring systems that already
 exist). Also draws on Module 5 (prompt regression testing).
 
-**Learning objectives (intended scope, not yet sourced):**
+**Learning objectives:**
 - Explain why evals matter for LLM applications specifically (non-determinism, no single
   ground truth, regressions from prompt/model changes).
-- Distinguish LLM-as-judge from rule-based/reference-based metrics and know the failure modes
-  of each (judge bias, calibration drift).
-- Build an offline eval dataset and distinguish online vs. offline evaluation.
-- Wire evals into CI/CD as a regression gate for prompt/model changes.
-- Apply RAG-specific and agent-specific eval metrics (this sub-topic is a direct dependency
-  from Modules 3 and 6).
+- Distinguish offline from online evaluation, and reference-based from reference-free
+  evaluators (human, code, LLM-as-judge, pairwise comparison), and know where each applies.
+- Build an offline eval dataset starting small (10-20 manual examples → historical traces →
+  synthetic data) and distinguish evaluation from testing.
+- (Stretch, currently a GAP) Distinguish LLM-as-judge from rule-based/reference-based metrics
+  and know the failure modes of each (judge bias, calibration drift); wire evals into CI/CD
+  as a regression gate; apply RAG-specific and agent-specific eval metrics (dependencies from
+  Modules 3 and 6).
 
-### Lesson content: GAP (entire module)
+### Lesson 4.1 — Evaluation concepts: the conceptual backbone (SOURCED)
 
-**GAP — no verified sources at all.** Zero verified entries under "Evals" in
-`research/verified.md`; every candidate blocked as `EGRESS_BLOCKED`.
+Verified source:
+- **Evaluation concepts — LangSmith / LangChain docs**
+  https://docs.langchain.com/langsmith/evaluation-concepts — Quality A · Level: intermediate
+  · Price: free (docs; the LangSmith product itself is paid) · Time: ~1.5-2 hours · Verified
+  2026-09-11 (manual check).
+
+Teach directly from this page — it is framework-agnostic in substance even though it lives in
+LangSmith's docs, so every idea transfers to a self-built eval harness:
+- **Offline vs. online**: offline evals run pre-deployment on datasets with reference
+  answers; online evals run on live traffic without references. Teach when each is the right
+  tool (offline for regression-gating a prompt/model change; online for catching drift in
+  production the offline set didn't anticipate).
+- **Evaluator types**: human, code-based, LLM-as-judge, and pairwise comparison — with the
+  reference-based vs. reference-free distinction as the axis that determines which evaluator
+  type is even applicable to a given task.
+- **Building a dataset incrementally**: start with 10-20 hand-written examples, graduate to
+  real historical traces once the system is live, and only then consider synthetic data —
+  this ordering matters because each stage catches different failure modes.
+- **Evaluation vs. testing**: evals measure quality on a spectrum (how good), tests assert
+  pass/fail correctness — conflating the two leads to either overly rigid evals or eval
+  suites that never actually gate anything.
+- Exercise: have the learner write a 10-example offline eval set for their own RAG/agent
+  project (built in Modules 3/6) using code-based checks only, before introducing
+  LLM-as-judge in the gap below — this forces the "can I check this without an LLM at all"
+  question the source implicitly poses.
+
+This lesson gives the concepts. It does not give LLM-as-judge calibration technique, a
+framework comparison, or CI/CD wiring — those remain gaps below.
+
+### Lesson 4.2 — LLM-as-judge, framework choice, CI/CD, calibration (GAP)
+
+**GAP.** Every other candidate under "Evals" in `research/verified.md` is `EGRESS_BLOCKED`
+or was screened out by genre without being opened.
 
 What's specifically needed, by sub-topic:
 1. **LLM-as-judge** — a verified primary source (from a framework vendor actually
@@ -323,16 +393,30 @@ What's specifically needed, by sub-topic:
    guidance, not just a definitional overview.
 2. **Framework comparison** — a verified, non-self-promotional comparison of eval
    frameworks/tools.
-3. **Building eval datasets** — a verified, hands-on source (ideally official docs) on
-   constructing eval sets for agents/RAG.
+3. **Building eval datasets, official docs** — a verified, hands-on source (ideally official
+   docs beyond LangSmith's) on constructing eval sets for agents/RAG specifically.
 4. **CI/CD integration** — a verified source on wiring evals into deployment pipelines as a
    quality gate.
-5. **Online vs. offline evals** — a verified source distinguishing the two with concrete
-   guidance on when each applies.
-6. **Human-eval calibration** — a verified source on calibrating an LLM judge against human
+5. **Human-eval calibration** — a verified source on calibrating an LLM judge against human
    annotations, since this is the crux of trusting automated evals at all.
 
-Candidate raw entries to re-check first (titles, under `research/raw/evals/`):
+Candidate raw entries to re-check first (titles, under `research/raw/evals/`) — 4 flagged
+"worth opening next" in `research/urls-to-verify.md`, plus 1 new candidate found via the
+Lesson 4.1 source itself:
+- "Your AI Product Needs Evals" (Hamel Husain — cited by LangSmith's own docs as a starting
+  point; newly found, not from the original search pass) —
+  `19-hamel-husain-your-ai-product-needs-evals.md`
+- "Building Agent & LLM Evaluation Datasets" (MLflow docs — official docs) —
+  `10-mlflow-docs-building-eval-datasets.md`
+- "LLM Evaluation: Methods, Metrics, RAG & Agent Evals Guide" (Arize) —
+  `12-arize-llm-evaluation-guide.md`
+- "LLM-as-a-Judge: A Complete Guide to Using LLMs for Evaluations" (Evidently AI) —
+  `04-evidentlyai-llm-as-a-judge-guide.md`
+- "Illusions of the Gold Standard..." (arXiv, human-eval protocols) —
+  `15-arxiv-illusions-of-the-gold-standard.md`
+
+Other candidates (screened out by genre — vendor listicle/content-marketing — without being
+opened; could be revisited if the topic still lacks material):
 - "LLM-as-a-Judge in 2026: Top Evaluation Techniques and Best Practices" (DeepEval) —
   `03-deepeval-llm-as-a-judge-2026.md`
 - "LLM-as-a-Judge: A Complete Guide to Using LLMs for Evaluations" (Evidently AI) —
@@ -364,55 +448,100 @@ Candidate raw entries to re-check first (titles, under `research/raw/evals/`):
 
 **Prerequisites:** Module 1 (tokens/context windows inform prompt length budgeting).
 
-**Learning objectives (intended scope, not yet sourced):**
-- Apply core prompting techniques (zero-shot vs. few-shot, chain-of-thought, structured
-  output) and know when each is worth the added tokens/complexity.
-- Design system prompts for a specific task/persona with explicit constraints.
-- Understand vendor-specific prompting differences (this is inherently a CURRENT-layer
-  concern, since it tracks specific model versions).
-- Iterate on prompts systematically rather than by ad hoc trial and error (connects forward
-  to Module 4's prompt-regression-testing sub-topic).
+**Learning objectives:**
+- Apply core prompting techniques (explicitness, context, concrete examples, few-shot,
+  chain-of-thought, prefill, format control, prompt chaining) and know when each is worth the
+  added tokens/complexity.
+- Recognize which "classic" prompting techniques (XML tags, explicit role prompting) are no
+  longer load-bearing on current-generation models, per the model vendor's own guidance —
+  and understand the industry shift from prompt engineering toward *context engineering*.
+- Apply few-shot prompting correctly: know that example *format and label distribution*
+  matter more than label correctness (Min et al. 2022), and recognize where few-shot breaks
+  down (reasoning-heavy tasks).
+- (Stretch, currently a GAP) Design system prompts with concrete before/after examples;
+  compare structured-output mechanisms across vendors; use prompt-optimization tooling
+  systematically rather than by ad hoc trial and error (connects to Module 4's eval-dataset
+  sub-topic).
 
-### Lesson content: GAP (entire module)
+### Lesson 5.1 — Foundational technique: Anthropic's guide + few-shot prompting (SOURCED)
 
-**GAP — no verified sources at all.** Zero verified entries under "Проектирование
-промптов" in `research/verified.md`; every candidate blocked as `EGRESS_BLOCKED` — including
-what would otherwise be an obvious Quality-A pick, Anthropic's own "Prompt engineering best
-practices" post, which could not be fetched in this session despite being a first-party
-vendor source.
+Verified sources:
+- **Prompt engineering best practices for 2026 — Claude by Anthropic**
+  https://claude.com/blog/best-practices-for-prompt-engineering — Quality A · Level:
+  beginner → intermediate · Price: free · Time: ~1 hour · Verified 2026-09-11 (manual check)
+  · Published 2025-11-10.
+- **Few-Shot Prompting — Prompt Engineering Guide (DAIR.AI)**
+  https://www.promptingguide.ai/techniques/fewshot — Quality A · Level: beginner · Price:
+  free (material; the site's courses are paid) · Time: ~30 min this page, ~6-8 hours for the
+  whole `techniques` section · Verified 2026-09-11 (manual check).
+
+Teach these two together:
+- From Anthropic's guide: the basic technique set (explicitness, context, concreteness,
+  examples, permission to say "I don't know"), the advanced set (prefill, three kinds of
+  chain-of-thought, output-format control, prompt chaining), and — just as important — the
+  explicit "what's no longer necessary" section: XML tags and explicit role prompting are not
+  required on current models the way older guidance suggested. Use its "need → technique"
+  table and its list of common mistakes directly as a lesson worksheet. Flag the framing
+  shift it names explicitly: prompt engineering → *context engineering* (see also the GAP
+  note in `CORE.md` Module 1 Lesson 1.2, and the new candidate source
+  `research/raw/prompt-engineering/19-anthropic-effective-context-engineering.md`, found via
+  this same post but not yet independently verified).
+- From the Prompt Engineering Guide: few-shot prompting grounded in Brown et al. 2020, then
+  immediately complicated by Min et al. 2022's finding that example *format* and *label
+  distribution* drive the benefit more than whether the labels are individually correct —
+  teach this as a caution against over-trusting few-shot on faith. Also teach where few-shot
+  demonstrably fails (multi-step reasoning tasks), setting up chain-of-thought as the next
+  tool rather than "more examples."
+- Exercise: take one real prompt from the learner's own project (from Module 3 or 6) and
+  apply the "need → technique" table to justify one concrete change, then verify token-cost
+  impact using the Module 1 tokenizer skill.
+- New, not-yet-verified candidate found via Anthropic's own site, high priority for the next
+  verification pass since GitHub is already reachable: Anthropic's own interactive prompting
+  tutorial repo — `research/raw/prompt-engineering/20-anthropic-prompt-eng-interactive-tutorial.md`
+  (https://github.com/anthropics/prompt-eng-interactive-tutorial).
+
+This covers foundational technique and few-shot specifically. System prompt design detail,
+structured output across vendors, and optimization tooling remain gaps below.
+
+### Lesson 5.2 — System prompt design, structured output, optimization tooling (GAP)
+
+**GAP.** Every other candidate under "Проектирование промптов" in `research/verified.md` is
+`EGRESS_BLOCKED` or was screened out by genre without being opened.
 
 What's specifically needed, by sub-topic:
-1. **Foundational technique** — a verified primary source (ideally a model vendor's own
-   prompting guide) covering zero-shot/few-shot, chain-of-thought, and structured output.
-2. **System prompt design** — a verified source with concrete before/after examples, not
+1. **System prompt design** — a verified source with concrete before/after examples, not
    just a bullet list of tips.
-3. **Chain-of-thought specifics** — a verified source explaining when CoT helps vs. hurts
-   (latency/cost tradeoff, and modern models where explicit CoT prompting may already be
-   less necessary).
-4. **Structured output** — a verified source comparing JSON-mode/structured-output
+2. **Structured output** — a verified source comparing JSON-mode/structured-output
    mechanisms across providers.
-5. **Prompt optimization tooling** — a verified, non-listicle source on systematic prompt
+3. **Prompt optimization tooling** — a verified, non-listicle source on systematic prompt
    iteration/optimization.
+4. **Vendor-specific prompting guides beyond Anthropic** (OpenAI, Google) — inherently a
+   CURRENT-layer concern; see `CURRENT.md`.
 
-Candidate raw entries to re-check first (titles, under `research/raw/prompt-engineering/`):
-- "Prompt engineering best practices for 2026" (Anthropic/Claude — first-party, top
-  priority to re-check) — `01-anthropic-claude-prompting-best-practices.md`
-- "The 2026 Guide to Prompt Engineering" (IBM) — `02-ibm-2026-guide-prompt-engineering.md`
+Candidate raw entries to re-check first (titles, under `research/raw/prompt-engineering/`) —
+5 flagged "worth opening next" in `research/urls-to-verify.md` (the OpenAI/Google
+vendor guides belong in `CURRENT.md` once sourced, not here, since they track specific model
+versions):
 - "Codex Prompting Guide" (OpenAI developers — first-party) —
   `12-openai-codex-prompting-guide.md`
 - "GPT-5.5 prompting guide" (Simon Willison — reputable independent practitioner) —
   `11-simonwillison-gpt55-prompting-guide.md`
 - "Gemini 3 developer guide" (Google AI for Developers — first-party) —
   `14-google-gemini3-developer-guide.md`
-- "Chain of Thought Prompting in AI: A Comprehensive Guide [2026]" —
-  `06-orq-chain-of-thought-comprehensive-guide.md`
-- "System Prompt Design Best Practices" — `05-buildmvpfast-system-prompt-design-best-practices.md`
-- "AI Structured Output Guide 2026: JSON Mode Across OpenAI, Claude, and Gemini" —
-  `08-crazyrouter-structured-output-guide.md`
-- "Few-Shot Prompting" (promptingguide.ai) — `15-promptingguide-few-shot.md`
 - "Zero-Shot vs Few-Shot prompting: A Guide with Examples" (Vellum) —
   `16-vellum-zero-shot-vs-few-shot.md`
-- "Top 10 Prompt Optimization Tools in 2026" — `09-futureagi-top-10-prompt-optimization-tools.md`
+- "promptolution: A Unified, Modular Framework for Prompt Optimization" (arXiv) —
+  `10-arxiv-promptolution-framework.md`
+
+Also newly found via the Lesson 5.1 sources (not yet verified, see
+`research/urls-to-verify.md`): Anthropic's "Effective context engineering for AI agents" and
+Anthropic's own interactive prompting tutorial repo (both cited in Lesson 5.1 above).
+
+The remaining raw candidates for this sub-topic (IBM's guide, orq's CoT guide, buildmvpfast's
+system-prompt piece, crazyrouter's structured-output guide, futureagi's optimization-tools
+listicle) were screened out by genre (content-marketing / unexplained listicle) without being
+opened — see `research/urls-to-verify.md` for the full reasoning; revisit only if the above
+five don't fill this gap.
 
 ---
 
@@ -617,38 +746,91 @@ This one worked example is not sufficient on its own to teach the full breadth o
 injection (direct injection, jailbreak-vs-injection distinction, defense-in-depth
 architectures, benchmarks) — those remain gaps below.
 
-### Lesson 8.2 — Direct injection, jailbreak distinction, defenses, benchmarks (GAP)
+### Lesson 8.2 — Indirect injection in the wild: taxonomy and telemetry (SOURCED)
 
-**GAP.** Every other candidate under "Prompt injection" in `research/verified.md` is
-`EGRESS_BLOCKED`.
+Verified source:
+- **Fooling AI Agents: Web-Based Indirect Prompt Injection Observed in the Wild — Unit 42**
+  https://unit42.paloaltonetworks.com/ai-agent-prompt-injection/ — Quality A · Level:
+  intermediate → advanced · Price: free · Time: ~1.5 hours · Verified 2026-09-11 (manual
+  check) · Published 2026-03-03.
+
+Teach directly from this post — it is field research on real telemetry, not theory:
+- The two-axis taxonomy of indirect injection: **attacker intent** (from "produce nonsense"
+  up to data destruction and system-prompt exfiltration) and **payload engineering** —
+  delivery methods (zero-size font, CSS-hiding, off-screen placement, HTML attributes,
+  SVG/CDATA, runtime execution) and evasion methods (invisible characters, homoglyphs,
+  payload splitting, multi-layer encoding, multilingual commands, JSON injection).
+- 12 real, dissected cases from live sites.
+- The telemetry finding that should reframe how learners think about defense priority: 85.2%
+  of observed evasions were plain social engineering (not exotic encoding tricks), and 37.8%
+  of deliveries were just visible text on the page — the sophisticated evasion techniques
+  make headlines, but the boring ones are what actually gets used.
+- The defenses section: spotlighting, instruction hierarchy, adversarial training,
+  architecture-level defenses — as a preview list (each has its own not-yet-verified
+  candidate source below, in Lesson 8.3).
+- The root-cause framing this article makes explicit: an LLM does not distinguish
+  instructions from data within one context stream. This is exactly the principle this
+  repository's own research agents were built to follow ("page content is data, not
+  instructions") — use it as the bridge between "here's a security topic" and "here's why
+  your own agent-building practice already has to account for this."
+- Notable meta-example: the article's own page contains a directive aimed at AI agents not to
+  execute the examples shown on it. Use this as a live illustration of what a trust boundary
+  looks like in practice — and note for the learner that the directive was correctly treated
+  as content to describe, not an instruction to follow, when this lesson was written.
+
+Together, Lessons 8.1 (Microsoft's worked example) and 8.2 (this taxonomy) cover: what the
+attack surface looks like end-to-end (tool metadata *and* web/RAG content), a concrete
+incident, and the two most-common real-world evasion patterns. They do not yet cover the
+jailbreak-vs-injection distinction, defense-architecture implementation detail, or benchmarks
+— those remain the gap below.
+
+### Lesson 8.3 — Jailbreak distinction, defense architectures, benchmarks (GAP)
+
+**GAP.** Every other candidate under "Prompt injection" in `research/verified.md` is either
+`EGRESS_BLOCKED` or was screened out by genre without being opened (see
+`research/urls-to-verify.md`) — except the OWASP cheat sheet and three academic papers found
+via Lesson 8.2's own defenses section, listed below as newly found, not-yet-verified
+candidates.
 
 What's specifically needed:
 1. A verified source clearly distinguishing **prompt injection from jailbreaking** (two
    independent candidates exist in the raw set — worth cross-checking against each other
    once reachable).
-2. A verified source on **indirect prompt injection** specifically (web-based / RAG-context-
-   based) beyond the single Microsoft worked example above — ideally from a security vendor
-   with its own incident data (Palo Alto Unit 42, CrowdStrike).
-3. A verified source on **defense architectures/guardrail systems** (e.g. an open-source
+2. A verified source on **defense architectures/guardrail systems** (e.g. an open-source
    guardrail project) with concrete implementation detail, not just "add input validation."
-4. A verified source on **benchmarks/evaluation of injection resistance** (this is also a
+3. A verified source on **benchmarks/evaluation of injection resistance** (this is also a
    Module 4 dependency — injection resistance should be part of an eval suite).
-5. Optionally, real-world incident/case-study material (e.g. CI/CD-pipeline injection via a
+4. Optionally, real-world incident/case-study material (e.g. CI/CD-pipeline injection via a
    coding agent) to make the risk concrete for engineers who don't think of "agent security"
    as their job.
 
-Candidate raw entries to re-check first (titles, under `research/raw/prompt-injection/`):
-- "Prompt Injection Defense for Production AI Agents: A Complete 2026 Guide" —
-  `01-prompt-injection-defense-production-agents.md`
-- "The Comprehensive Guide to Prompt Injection Attacks in 2026" (Sysdig) —
-  `02-sysdig-comprehensive-guide.md`
+Newly found via Lesson 8.2's own defenses section (not from the original search pass, not yet
+verified — high priority for the next pass):
+- "LLM Prompt Injection Prevention Cheat Sheet" (OWASP — standards-body primary source) —
+  `research/raw/prompt-injection/17-owasp-llm-prompt-injection-cheat-sheet.md`
+- "Spotlighting" (arXiv 2403.14720, named explicitly as a defense in Lesson 8.2's source) —
+  `research/raw/prompt-injection/18-spotlighting-arxiv-2403.14720.md`
+- "The Instruction Hierarchy" (arXiv 2404.13208, named explicitly in Lesson 8.2's source) —
+  `research/raw/prompt-injection/19-instruction-hierarchy-arxiv-2404.13208.md`
+- "Design-level defenses against prompt injection" (arXiv 2503.18813) —
+  `research/raw/prompt-injection/20-design-level-defenses-arxiv-2503.18813.md`
+- "Adversarial Prompting" section, same Prompt Engineering Guide as the verified Lesson 5.1
+  few-shot page — `research/raw/prompt-injection/16-promptingguide-adversarial-prompting.md`
+
+Candidate raw entries from the original search pass to re-check first (titles, under
+`research/raw/prompt-injection/`) — 10 flagged "worth opening next" in
+`research/urls-to-verify.md`:
 - "Indirect Prompt Injection: The Hidden Threat Breaking Modern AI Systems" (Lakera) —
   `05-lakera-indirect-prompt-injection.md`
-- "Fooling AI Agents: Web-Based Indirect Prompt Injection Observed in the Wild" (Palo Alto
-  Unit 42 — vendor with real incident telemetry, good candidate) —
-  `06-unit42-fooling-ai-agents.md`
 - "Indirect Prompt Injection Attacks: Hidden AI Risks" (CrowdStrike) —
   `07-crowdstrike-indirect-prompt-injection.md`
+- "LlamaFirewall: An Open Source Guardrail System for Building Secure AI Agents" (arXiv —
+  concrete open-source system, strong candidate for implementation-level teaching) —
+  `14-llamafirewall.md`
+- "PIArena: A Platform for Prompt Injection Evaluation" (arXiv, benchmark) —
+  `03-piarena-benchmark.md`
+- "LongPIBench: A Long-Context Benchmark for Prompt Injection" (arXiv, benchmark) —
+  `04-longpibench.md`
 - "Agent Data Injection Attacks are Realistic Threats to AI Agents" (arXiv) —
   `08-agent-data-injection-attacks.md`
 - "GitInject: Real-World Prompt Injection Attacks in AI-Powered CI/CD Pipelines" (arXiv —
@@ -659,15 +841,11 @@ Candidate raw entries to re-check first (titles, under `research/raw/prompt-inje
   `12-learnprompting-injection-vs-jailbreaking.md`
 - "Prompt Injection vs Jailbreaking: What's the Difference?" (Promptfoo — cross-check
   against the above for agreement) — `13-promptfoo-injection-vs-jailbreaking.md`
-- "LlamaFirewall: An Open Source Guardrail System for Building Secure AI Agents" (arXiv —
-  concrete open-source system, strong candidate for implementation-level teaching) —
-  `14-llamafirewall.md`
-- "PIArena: A Platform for Prompt Injection Evaluation" (arXiv, benchmark) —
-  `03-piarena-benchmark.md`
-- "LongPIBench: A Long-Context Benchmark for Prompt Injection" (arXiv, benchmark) —
-  `04-longpibench.md`
-- "Cortex AI Guardrails: Prompt Injection & Jailbreak Prevention" (Snowflake — vendor
-  primary source) — `15-snowflake-cortex-guardrails.md`
+
+Screened out by genre without opening (content-marketing / legal, not a technical-content
+signal): getmaxim.ai's defense guide, Sysdig's guide, Snowflake's guardrails post (vendor
+content-marketing), ktslaw's litigation-risk alert (legal, not instructional) — see
+`research/urls-to-verify.md`.
 
 ---
 
@@ -676,62 +854,91 @@ Candidate raw entries to re-check first (titles, under `research/raw/prompt-inje
 **Prerequisites:** all preceding modules — this is explicitly a capstone/review layer, not
 new technical content.
 
-**Learning objectives (intended scope, not yet sourced):**
-- Answer conceptual questions across all prior modules fluently (tokenization, RAG, evals,
-  agents, cost/latency, security) at a level appropriate for AI Engineer interviews.
-- Work through system-design-style prompts (e.g. "design a RAG system", "design an agentic
-  customer-support system") with a structured approach.
-- Practice articulating tradeoffs (the recurring theme across every module: RAG vs.
-  long-context, single-agent vs. multi-agent, judge-based vs. reference-based evals) since
-  that is what distinguishes a strong interview answer from a definition-recitation.
+**Design decision (11.09.2026):** this module is deliberately **not** built as a question
+bank, even where verified question-list sources might eventually exist. Rationale: the "45+
+questions with answers" genre teaches memorized phrasing, not understanding — and memorized
+answers collapse on the first follow-up question, which is exactly what an interviewer probes
+for. This is doubly true for a candidate whose interview will center on a take-home/test
+project: that interview is structured around *your own code and the decisions you made*, not
+a generic question bank. So Module 9 is redesigned around **defending your own project**
+instead. See `research/urls-to-verify.md` → "Тема «Вопросы на собеседованиях»" for the full
+reasoning and the disposition of all 20 raw candidates in that topic.
 
-### Lesson content: GAP (entire module)
+**Learning objectives:**
+- Give a clear, structured walkthrough of your own project (built across Modules 1-8): what
+  it does, why you made the architecture choices you made, and what you'd change with more
+  time.
+- Defend specific decisions under questioning: why this chunking/retrieval approach and not
+  another (Module 3), why this model/prompting strategy (Modules 1, 5), what your evals
+  actually check and don't check (Module 4), what your cost/latency profile looks like and
+  where the next bottleneck is (Module 7), what your threat model is for prompt injection
+  given what the project actually does (Module 8).
+- Handle scaling/what-if questions with a reasoned estimate rather than a guess: "what if
+  load grows 100x", "what if this needs to run 10x cheaper", "what's the first thing that
+  breaks and how would you know."
+- Practice articulating tradeoffs, since every prior module has one at its center (RAG vs.
+  long-context, single-agent vs. multi-agent, judge-based vs. reference-based evals,
+  cache-friendly vs. flexible prompt structure) — a strong answer names the tradeoff and the
+  reason for the specific choice, not just the choice.
 
-**GAP — no verified sources at all.** Zero verified entries under "Вопросы на
-собеседованиях AI Engineer" in `research/verified.md`; every candidate blocked as
-`EGRESS_BLOCKED`. This module cannot be built at all right now beyond restating the
-objectives above — there is no verified question bank, no verified system-design guide, and
-no verified "what do interviewers actually test for" source to draw from.
+### Lesson 9.1 — Structured project walkthrough & defense (methodology, no external source needed)
 
-What's specifically needed:
-1. A verified, credible (not SEO-listicle) question bank for AI/LLM engineer interviews,
-   ideally from a source with actual hiring-process visibility (a recruiting company, a
-   documented set of real interview reports) rather than a generic "Top N questions" blog.
-2. A verified system-design guide specific to generative-AI/RAG/agentic system design
-   interviews, with worked example answers, not just a question list.
-3. Verified, topic-specific question sets for RAG and for prompt engineering specifically,
-   so this module can cross-link back into Modules 3 and 5 rather than being a single
-   generic list.
+This lesson is a facilitation structure, not a set of readings — it doesn't need an external
+citation because it is built entirely from what the learner already produced in Modules 1-8,
+plus general interview-coaching practice (connective narrative, per this curriculum's rules,
+since no concrete "resource" is being pointed to).
 
-Candidate raw entries to re-check first (titles, under
-`research/raw/ai-engineer-interview-questions/`):
-- "45+ AI Engineer Interview Questions & Answers (2026 Guide)" (UPenn Career Services —
-  university career-services source, worth prioritizing for credibility) —
-  `01-upenn-ai-engineer-interview-questions.md`
-- "Every AI Engineer Interview Question You Need to Know in 2026 (From 100+ Real
-  Interviews)" (claims real-interview provenance — worth checking if it substantiates that
-  claim) — `02-medium-100-real-interviews-ai-engineer.md`
-- "45+ AI Engineer Interview Questions & Answers (2026 Guide)" (Aced/Exponent — an actual
-  interview-prep company) — `03-exponent-ai-engineer-interview-questions.md`
+Run it as a mock interview with four fixed rounds, each keyed to specific prior modules:
+1. **The pitch (2-3 min).** Learner explains the project like they would to a hiring manager
+   who hasn't seen the code: what it does, for whom, and the one or two decisions they're
+   proudest of.
+2. **The architecture drill-down.** Interviewer picks one component (retrieval, prompting,
+   an agent tool, the eval harness) and asks "why this, not X" until the learner reaches a
+   real constraint (cost, latency, data availability, time) rather than "it's the popular
+   choice." Directly exercises the tradeoff-articulation objective above.
+3. **The scaling/failure round.** Interviewer asks 2-3 what-if questions calibrated to the
+   project's actual stack (e.g. "your vector DB now has 100x the documents — what breaks
+   first and what do you change," "a user reports the agent leaked something it
+   shouldn't've — walk me through how you'd find out why"). Answers should reference the
+   learner's own Module 7 cost/latency reasoning and Module 8 threat model, not a generic
+   scaling playbook.
+4. **The retrospective.** "What would you do differently with another week / with 10x the
+   budget / if this had to support 100 more users tomorrow." Tests whether the learner
+   actually understands their own tradeoffs or just made choices by default.
+
+Have the learner keep a one-page "decision log" while building the Modules 3/5/6/8 projects
+(each entry: decision, alternatives considered, why this one) — Round 2 and Round 3 both draw
+directly from this log, and building it is itself good practice for interviews that ask "walk
+me through a decision you made."
+
+### Lesson 9.2 — Optional supplementary material (unverified, use with caution)
+
+Not required for Lesson 9.1, and deliberately not built into the core methodology above (see
+the design decision at the top of this module). If a learner wants extra exposure to how
+generative-AI system-design questions are typically framed, these raw candidates are flagged
+"worth opening next" in `research/urls-to-verify.md` — they lean toward system-design
+case-style material rather than pure question-and-answer lists, but are **not yet verified**:
 - "Generative AI System Design Interview: 2026 Guide" —
-  `09-systemdesignhandbook-genai-system-design-guide.md`
+  `research/raw/ai-engineer-interview-questions/09-systemdesignhandbook-genai-system-design-guide.md`
 - "AI System Design Interview Questions (2026)" —
-  `10-systemdesignhandbook-ai-system-design-questions.md`
+  `research/raw/ai-engineer-interview-questions/10-systemdesignhandbook-ai-system-design-questions.md`
 - "Machine Learning System Design Interview (2026 Guide)" (Exponent) —
-  `12-exponent-ml-system-design-interview-guide.md`
-- "7 RAG & Agent System Design Questions You Will Face in Every AI Engineer Interview (With
-  Answers)" — `14-towardsai-rag-agent-system-design-questions.md`
-- "Design and optimize a RAG system | OpenAI Interview Question" (claims to be an actual
-  reported interview question — worth checking provenance) —
-  `19-prachub-design-optimize-rag-system.md`
-- "Top 30 RAG Interview Questions and Answers for 2026" (DataCamp) —
-  `13-datacamp-rag-interview-questions.md`
-- "RAG Interview: 40 Questions to Go from Beginner to Advanced" (Analytics Vidhya) —
-  `15-analyticsvidhya-rag-interview-questions.md`
-- "Prompt Engineering Interview Questions That Actually Get Asked" (CodeSignal) —
-  `17-codesignal-prompt-engineering-interview-questions.md`
-- "Top 32 Prompt Engineering Interview Questions (2026)" —
-  `18-datainterview-prompt-engineering-questions.md`
+  `research/raw/ai-engineer-interview-questions/12-exponent-ml-system-design-interview-guide.md`
+- "The Complete Agentic AI System Design Interview Guide 2026" —
+  `research/raw/ai-engineer-interview-questions/11-medium-agentic-ai-system-design-guide.md`
+- "7 RAG & Agent System Design Questions..." —
+  `research/raw/ai-engineer-interview-questions/14-towardsai-rag-agent-system-design-questions.md`
+- "Design and optimize a RAG system | OpenAI Interview Question" (claims real-interview
+  provenance — check that claim before trusting it) —
+  `research/raw/ai-engineer-interview-questions/19-prachub-design-optimize-rag-system.md`
+- "45+ AI Engineer Interview Questions" (UPenn Career Services, Aced/Exponent) and "100+ Real
+  Interviews" (Medium) — three sources claiming institutional/real-interview provenance,
+  worth checking that claim specifically rather than treating them as generic listicles —
+  `research/raw/ai-engineer-interview-questions/01-upenn-ai-engineer-interview-questions.md`,
+  `03-exponent-ai-engineer-interview-questions.md`, `02-medium-100-real-interviews-ai-engineer.md`
+
+The other 11 raw candidates in this topic were screened out entirely (pure "N questions with
+answers" listicles) — see `research/urls-to-verify.md` for the list and reasoning.
 
 ---
 
@@ -741,15 +948,16 @@ Candidate raw entries to re-check first (titles, under
 |---|---|---|---|
 | 0 | Orientation | 0 (see CURRENT.md) | meta / non-graded |
 | 1 | LLM Fundamentals & Tokenization | 1 (tiktoken) | **partial** — tokenization mechanics sourced; sampling/context/attention/KV-cache is a GAP |
-| 2 | Embeddings & Vector Search | 0 | **GAP** (entire module) |
+| 2 | Embeddings & Vector Search | 1 (HNSW) | **partial** — vector index mechanics sourced; model selection/hybrid search/chunking/reranking is a GAP |
 | 3 | Retrieval-Augmented Generation | 0 | **GAP** (entire module) |
-| 4 | Evaluation (Evals) | 0 | **GAP** (entire module) |
-| 5 | Prompt Design & Iteration | 0 | **GAP** (entire module) |
+| 4 | Evaluation (Evals) | 1 (LangSmith evaluation concepts) | **partial** — core concepts sourced; LLM-as-judge/frameworks/CI/CD/calibration is a GAP |
+| 5 | Prompt Design & Iteration | 2 (Anthropic best practices, Few-Shot Prompting Guide) | **partial** — foundational technique + few-shot sourced; system prompt design/structured output/optimization tooling is a GAP |
 | 6 | Agents & Tool Use | 3 (2 MCP posts + 1 shared with Module 8) | **partial** — MCP protocol sourced; agent fundamentals/architectures/frameworks is a GAP |
 | 7 | Cost & Latency | 0 | **GAP** (entire module) |
-| 8 | Prompt Injection & Security | 1 (shared with Module 6) | **partial** — one worked example sourced; everything else is a GAP |
-| 9 | Interview Readiness | 0 | **GAP** (entire module) |
+| 8 | Prompt Injection & Security | 2 (Microsoft worked example, shared with Module 6; Unit 42 taxonomy) | **partial** — worked example + real-world taxonomy sourced; jailbreak distinction/defense architectures/benchmarks is a GAP |
+| 9 | Interview Readiness | 0, by design | **redesigned** — self-contained "defend your own project" methodology, not a GAP; question-bank sources deliberately excluded (see module text) |
 
 Note: the Microsoft security post is counted once as a verified source but used in two
 modules (6 and 8) because its content genuinely serves both — that is a deliberate citation
-choice, not double-counting toward the "7 verified sources" total in `research/verified.md`.
+choice, not double-counting toward the "12 verified sources" total in `research/verified.md`
+(7 from the automated pass, 5 added in the manual follow-up pass of 11.09.2026).
